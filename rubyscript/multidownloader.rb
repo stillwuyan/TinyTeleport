@@ -1,0 +1,1 @@
+system("dd if=/dev/zero of=" + f + " bs=1 count=0 seek=" + ARGV[0] + "M");
