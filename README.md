@@ -1,1 +1,1 @@
-# tiny-teleport
+# tiny teleport
