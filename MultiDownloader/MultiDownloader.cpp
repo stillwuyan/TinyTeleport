@@ -334,7 +334,7 @@ HRESULT OpenURL(HWND hWnd)
         "Proxy-Authorization: Basic ***********\r\n" \
         "Accept: */*\r\n" \
         "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.107 Safari/537.36\r\n\r\n",
-        strstr(g_acURL, g_acDomain), g_acDomain);
+        strstr(g_acURL, g_acDomain)+strlen(g_acDomain), g_acDomain);
 
     int iResult = 0;
     ADDRINFOW* result = NULL;
@@ -452,9 +452,9 @@ void ThreadProc(void* param)
     __int64 begin = 0;
     __int64 end = g_segmentMatrix[index][0] - 1;
     __int64 backup = end;
+    __int64 writeSize = 0LL;
 
 LOOP:
-    __int64 writeSize = 0LL;
     int iResult = 0;
     ADDRINFOW* result = NULL;
     ADDRINFOW* ptr = NULL;
@@ -510,7 +510,7 @@ LOOP:
             "Accept: */*\r\n" \
             "Range: bytes=%I64d-%I64d\r\n"
             "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.107 Safari/537.36\r\n\r\n",
-            strstr(g_acURL, g_acDomain), g_acDomain, begin, end);
+            strstr(g_acURL, g_acDomain)+strlen(g_acDomain), g_acDomain, begin, end);
         iResult = send(connectSocket, sendBuff, (int)strlen(sendBuff), 0);
         if (iResult == SOCKET_ERROR)
         {
