@@ -1,0 +1,50 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "c11013d5ea120a5be1d2bd4c7ed680bae3dfe9e280d2caba6286aa574652fd3b"
+        },
+        "host-environment-markers": {
+            "implementation_name": "cpython",
+            "implementation_version": "3.6.4",
+            "os_name": "posix",
+            "platform_machine": "x86_64",
+            "platform_python_implementation": "CPython",
+            "platform_release": "3.10.0-514.6.1.el7.x86_64",
+            "platform_system": "Linux",
+            "platform_version": "#1 SMP Wed Jan 18 13:06:36 UTC 2017",
+            "python_full_version": "3.6.4",
+            "python_version": "3.6",
+            "sys_platform": "linux"
+        },
+        "pipfile-spec": 6,
+        "requires": {},
+        "sources": [
+            {
+                "name": "pypi",
+                "url": "https://pypi.python.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {
+        "pycurl": {
+            "hashes": [
+                "sha256:7f457eac8ed02ae06655993399b4cf8c11a5202f3a01b255de300dced8c3e3d5",
+                "sha256:a75d1d81a5e65cf53ddadd36ca89083f29134e027a310ae0c3e97570789db1db",
+                "sha256:2a7d4d7bb0194b1849c62ecaccbc28298a4372c3edbdd3c3e61761d705311925",
+                "sha256:ea44d26aa092c39fe1a07c75adb453ab46c5d1433e8baad02edbf2c1d2bc90f5",
+                "sha256:70230a862178cf37d0922c0974b759577e55253c9cfe72298400881d6432cf99",
+                "sha256:d0f26b811defeb0b9697afdf4c3aa3cc42781185234e0b73ca58bb7639f6786c",
+                "sha256:43231bf2bafde923a6d9bb79e2407342a5f3382c1ef0a3b2e491c6a4e50b91aa",
+                "sha256:1b97ae53ab2c515cbcaa5d563d443ed8e9630e8a94ba07d4bfbe287c5d89c472",
+                "sha256:384e541bb948c5d0a82f20fc24cfa4c17b80d366089e3c1911c812c1dc446ab7",
+                "sha256:7d57195f96a49c173b052617bd56589326b4f91ec1fccb52522ae96f8f240bde",
+                "sha256:50a10a6ea1e184aef5261f1df1187598271d5b8b9ab6ef025ef574dd796df7fb",
+                "sha256:164ba8e7675b9dec38f4eb25ee8a071bad7f66ab5c481547f3db43b0d2e7a8eb",
+                "sha256:920f7ee8b231fb009594e6f35aa7ed829ff74a5595efa9800fd1d6656106c2a8"
+            ],
+            "version": "==7.43.0.1"
+        }
+    },
+    "develop": {}
+}
