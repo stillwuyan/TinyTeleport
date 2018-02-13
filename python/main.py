@@ -7,6 +7,7 @@ from queue import Empty
 import time
 import os
 from urllib.parse import urljoin, urlparse
+from datetime import datetime
 
 FUNC_MAP = {
     '.m3u8': '1.m3u8',
@@ -15,13 +16,14 @@ FUNC_MAP = {
 }
 CHUNK_SIZE = 1 * 1024 * 1024    # Chunk size: 1M
 CHUNK_MARGIN = 2 * CHUNK_SIZE
-RECORD_FILE = 'record.log'
 QUEUE_WAIT_SECOND = 5
 QUEUE_WAIT_TIMES = 6            # Total 30s
+INFO_FILE = 'record.log'
+LOG_FILE = 'download.log'
 
 def progress(download_total, downloaded, uploaded_total, upload):
-    log("To be downloaded: %s" % str(download_total))
-    log("Downloaded : %s" % str(downloaded))
+    debug("To be downloaded: {}".format(download_total))
+    debug("Downloaded : {}".format(downloaded))
 
 def parse_m3u8(queue, url, file):
     m3u8_url = None
@@ -53,16 +55,16 @@ def get_size(url):
         code = c.getinfo(c.RESPONSE_CODE)
         size = c.getinfo(c.CONTENT_LENGTH_DOWNLOAD)
         if code != 200:
-            log('Get file size failed: %s' % url)
-            log('Reason: response code is %d' % code)
+            error('Get file size failed: {}'.format(url))
+            error('Reason: response code is {}'.format(code))
     except Exception as e:
-        log('Get file size failed: %s' % url)
-        log('Reason: %s' % e)
+        error('Get file size failed: {}'.format(url))
+        error('Reason: {}'.format(e))
         size = 0
     return size, code!=200
 
 def get_file(url, output_file):
-    log('Download beginning: %s' % url)
+    debug('Download beginning: {}'.format(url))
     c = pycurl.Curl()
     c.setopt(c.URL, url)
     # c.setopt(c.NOPROGRESS, True)
@@ -74,20 +76,20 @@ def get_file(url, output_file):
             c.perform()
             code = c.getinfo(c.RESPONSE_CODE)
             if code is 200:
-                log('Download successfully: %s' % url)
+                debug('Download successfully: {}'.format(url))
                 info({'url':url, 'file':output_file}) if not output_file.endswith('.ts') else None
             else:
-                log('Download failed: %s' % url)
-                log('Reason: response code is %d' % code)
+                error('Download failed: {}'.format(url))
+                error('Reason: response code is {}'.format(code))
                 retry = True
         except Exception as e:
-            log('Download failed: %s' % url)
-            log('Reason: %s' % e)
+            error('Download failed: {}'.format(url))
+            error('Reason: {}'.format(e))
             retry = True
         return retry
 
 def get_large_file(url, output_file, size):
-    log('Download beginning: %s' % url)
+    debug('Download beginning: {}'.format(url))
     c= pycurl.Curl()
     c.setopt(c.URL, url)
     retry = False
@@ -99,18 +101,19 @@ def get_large_file(url, output_file, size):
             try:
                 lim_l = index * CHUNK_SIZE
                 lim_u = (index+1)*CHUNK_SIZE if (index+1) < count else size
-                c.setopt(c.RANGE, '%d-%d' % (lim_l, lim_u-1))
+                c.setopt(c.RANGE, '{}-{}'.format(lim_l, lim_u-1))
                 c.perform()
                 code = c.getinfo(c.RESPONSE_CODE)
                 if code == 206:
                     index += 1
+                    debug('Downloading...: {}[{}:{}]'.format(url, lim_u, size))
                 else:
-                    log('Download failed: %s[%d-%d]' % (url, lim_l, lim_u-1))
+                    error('Download failed: {}[{}-{}]'.format(url, lim_l, lim_u-1))
                     f.seek(lim_l)
             except Exception as e:
-                log('Download failed: %s' % url)
-                log('Reason: %s' % e)
-    log('Download successfully: %s[%d]' % (url, size))
+                error('Download failed: {}'.format(url))
+                error('Reason: {}'.format(e))
+    debug('Download successfully: {}[{}:{}]'.format(url, os.path.getsize(output_file), size))
     info({'url':url, 'file':output_file}) if not output_file.endswith('.ts') else None
     return retry
 
@@ -127,18 +130,19 @@ def download(queue, output):
         result = urlparse(url)
         output_file = os.path.join(output, result.path[1:])
         if not os.path.exists(os.path.dirname(output_file)):
-            os.makedirs(os.path.dirname(output_file))
+            os.makedirs(os.path.dirname(output_file), exist_ok=True)
         size, error = get_size(url)
-        if os.path.exists(output_file) and os.path.getsize(output_file) == size:
-            log('Already downloaded: %s' % url)
-            continue
+
         if error:
-            log('Drop url: %s' % url)
+            error('Drop url: {}'.format(url))
             continue
+        elif os.path.exists(output_file) and os.path.getsize(output_file) == size:
+            debug('Already downloaded: {}'.format(url))
         elif size < CHUNK_MARGIN:
             requeue = get_file(url, output_file)
         else:
             requeue = get_large_file(url, output_file, size)
+
         if requeue:
             queue.put(url)
         elif output_file.endswith('.m3u8'):
@@ -149,11 +153,20 @@ def dispatch(url, queue):
         return
     queue.put(url)
 
-def log(msg):
-    print('[%d]%s' % (os.getpid(), msg))
+def debug(msg):
+    #print('[{}]{}'.format(os.getpid(), msg))
+    s = '[{}][{}]{}'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), os.getpid(), msg)
+    with open(LOG_FILE, 'at') as f:
+        f.write(s + '\n')
+
+def error(msg):
+    print('[{}]{}'.format(os.getpid(), msg), sys.stderr)
+    s = '[{}][{}]{}'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), os.getpid(), msg)
+    with open(LOG_FILE, 'at') as f:
+        f.write(s + '\n')
 
 def info(obj):
-    with open(RECORD_FILE, 'at') as f:
+    with open(INFO_FILE, 'at') as f:
         f.write(str(obj) + '\n')
 
 def main():
